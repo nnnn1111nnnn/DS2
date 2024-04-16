@@ -47,7 +47,6 @@ df_all['word_in_title'] = df_all['product_info'].map(lambda x:str_common_word(x.
 df_all['word_in_description'] = df_all['product_info'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[2]))
 
 df_all = df_all.drop(['search_term','product_title','product_description','product_info'],axis=1)
-
 df_train = df_all.iloc[:num_train]
 
 # Define the features (X) and target variable (y)
