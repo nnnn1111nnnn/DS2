@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error
 
 stemmer = SnowballStemmer('english')
 stemming = input("Do you want to use stemming? (y/n): ")
+df_attributes = pd.read_csv('attributes.csv/attributes.csv')
 df_train = pd.read_csv('train.csv/train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('test.csv/test.csv', encoding="ISO-8859-1")
 #df_attr = pd.read_csv('attributes.csv/attributes.csv')
@@ -22,7 +23,7 @@ def str_stemmer(s):
 def str_common_word(str1, str2):
 	return sum(int(str2.find(word)>=0) for word in str1.split())
 
-
+df_train = pd.merge(df_train, df_attributes, on='product_uid', how='left')
 df_all = pd.concat((df_train, df_test), axis=0, ignore_index=True)
 
 df_all = df_all.rename(columns={'product_uid ': 'product_uid'})
@@ -32,6 +33,7 @@ df_all = df_all.rename(columns={'product_uid ': 'product_uid'})
 #print("Columns in df_pro_desc: ", df_pro_desc.columns)
 
 df_all = pd.merge(df_all, df_pro_desc, how='left', on="product_uid")
+df_all = pd.merge(df_all, df_attributes, how='left', on="product_uid")
 if stemming == 'y':
     print("Executing with stemming")
     df_all['search_term'] = df_all['search_term'].map(lambda x:str_stemmer(x))
@@ -45,7 +47,7 @@ df_all['product_info'] = df_all['search_term']+"\t"+df_all['product_title']+"\t"
 
 df_all['word_in_title'] = df_all['product_info'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[1]))
 df_all['word_in_description'] = df_all['product_info'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[2]))
-
+df_all['num_matches'] = df_all.apply(lambda row: sum(row['search_term'].lower() in str(row[attr_value]).lower() for attr_value in df_attributes['value']), axis=1)
 df_all = df_all.drop(['search_term','product_title','product_description','product_info'],axis=1)
 df_train = df_all.iloc[:num_train]
 
