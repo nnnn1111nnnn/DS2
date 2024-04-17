@@ -4,6 +4,12 @@ from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
 from nltk.stem.snowball import SnowballStemmer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.model_selection import KFold, cross_val_score
+from sklearn.svm import SVR
+import time
 
 stemmer = SnowballStemmer('english')
 stemming = input("Do you want to use stemming? (y/n): ")
@@ -55,12 +61,47 @@ X = df_train.drop(['id', 'relevance'], axis=1)  # Features
 y = df_train['relevance']  # Target variable
 
 # Split the data into training and testing sets (80% training, 20% testing)
+# linear,Decision Tree Regression, k-nearest neighbors, randomforrest
+#we will also measure how long it takes with every model
+
+
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-rf = RandomForestRegressor(n_estimators=15, max_depth=6, random_state=0)
-clf = BaggingRegressor(rf, n_estimators=45, max_samples=0.1, random_state=25)
-clf.fit(X_train, y_train)
-y_pred = clf.predict(X_test)
+regression = input("Choose your regression model. Options: 1 =  linear, 2 = Decision Tree Regression, 3 = k-nearest neighbors, 4 = randomforrest:, 5= Support Vector: ")
 
-rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+while regression != 'stop':
+    if regression == "1":
+        clf = LinearRegression()#hyperparameters
+    elif regression == "2":
+        clf = DecisionTreeRegressor(max_depth=10,min_samples_split=3,min_samples_leaf=5,criterion='absolute_error')
+    elif regression == "3":
+        clf = KNeighborsRegressor()
+    elif regression == "4":
+        rf = RandomForestRegressor(n_estimators=15, max_depth=6, random_state=0)
+        clf = BaggingRegressor(rf, n_estimators=45, max_samples=0.1, random_state=25)
+    elif regression == "5":
+        clf = SVR()
+    else:
+        print("Invalid regression model.")
 
-print("Root Mean Squared Error (RMSE):", rmse)
+    start = time.time()
+
+    #k_folds = KFold(n_splits = 5)
+    #scores = cross_val_score(clf, X, y, cv = k_folds)
+
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
+    end = time.time()
+
+    print("Time taken: ", end-start)
+    print("Root Mean Squared Error (RMSE):", rmse)
+
+    #reset clf, y_pred, rmse, start, end
+    clf = None
+    y_pred = None
+
+    regression = input("Choose your regression model. Options: 1 =  linear, 2 = Decision Tree Regression, 3 = k-nearest neighbors, 4 = randomforrest: ")
+
