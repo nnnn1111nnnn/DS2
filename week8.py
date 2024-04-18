@@ -54,7 +54,9 @@ df_all['product_info'] = df_all['search_term']+"\t"+df_all['product_title']+"\t"
 
 df_all['word_in_title'] = df_all['product_info'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[1]))# Number of common words between the search term and product title
 df_all['word_in_description'] = df_all['product_info'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[2])) # Number of common words between the search term and product description
-#df_all['num_matches'] = df_all.apply(lambda row: sum(row['search_term'].lower() in str(row[attr_value]).lower() for attr_value in df_attributes['value']), axis=1)
+df_all['new_feature'] = df_all['len_of_query'] * df_all['word_in_description']
+df_all['new_feature2'] = df_all['len_of_query'] * df_all['word_in_title']
+df_all['new_feature3'] = df_all['word_in_description'] * df_all['word_in_title']
 df_all = df_all.drop(['search_term','product_title','product_description','product_info'],axis=1)
 df_train = df_all.iloc[:num_train]
 
@@ -72,11 +74,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 # Define hyperparameters grid for each model
 hyperparameters = {
+     #list(range(1,101))
     'linear': {},
     'decision_tree': {'max_depth': [6], 'min_samples_split': [53], 'min_samples_leaf': [191], 'criterion': ['squared_error']},
     'knn': {'n_neighbors': [3, 4, 5], 'weights': ['uniform', 'distance'],  'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'], 'leaf_size': [30, 40, 50]},
-    #'random_forest': {'n_estimators': [20, 30, 40], 'max_depth': [10, 20, 30], 'max_features': ['sqrt', 'log2'], 'criterion': ['squared_error', 'absolute_error']},
-    #'svm': {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf']}
+    'random_forest': {'n_estimators': [20, 30, 40], 'max_depth': [10, 20, 30], 'max_features': ['sqrt', 'log2'], 'criterion': ['squared_error', 'absolute_error']},
+    'svm': {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf']}
 }
 
 # Define models
