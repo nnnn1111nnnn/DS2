@@ -11,7 +11,7 @@ stemming = input("Do you want to use stemming? (y/n): ")
 df_train = pd.read_csv('train.csv/train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('test.csv/test.csv', encoding="ISO-8859-1")
 #df_attr = pd.read_csv('attributes.csv/attributes.csv')
-df_pro_desc = pd.read_csv('product_descriptions.csv/product_descriptions.csv')
+df_pro_desc = pd.read_csv('product_descriptions.csv')
 num_train = df_train.shape[0]
 
 def str_stemmer(s):
@@ -46,7 +46,9 @@ df_all['product_info'] = df_all['search_term']+"\t"+df_all['product_title']+"\t"
 
 df_all['word_in_title'] = df_all['product_info'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[1]))# Number of common words between the search term and product title
 df_all['word_in_description'] = df_all['product_info'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[2])) # Number of common words between the search term and product description
-#df_all['num_matches'] = df_all.apply(lambda row: sum(row['search_term'].lower() in str(row[attr_value]).lower() for attr_value in df_attributes['value']), axis=1)
+df_all['new_feature'] = df_all['len_of_query'] * df_all['word_in_description']
+df_all['new_feature2'] = df_all['len_of_query'] * df_all['word_in_title']
+df_all['new_feature3'] = df_all['word_in_description'] * df_all['word_in_title']
 df_all = df_all.drop(['search_term','product_title','product_description','product_info'],axis=1)
 df_train = df_all.iloc[:num_train]
 

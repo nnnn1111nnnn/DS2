@@ -73,24 +73,24 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # Define hyperparameters grid for each model
 hyperparameters = {
     'linear': {},
-    'decision_tree': {'max_depth': [10,20,30], 'min_samples_split': [4,5,6], 'min_samples_leaf': [3, 4], 'criterion': ['squared_error','friedman_mse']},
+    'decision_tree': {'max_depth': [6], 'min_samples_split': [53], 'min_samples_leaf': [191], 'criterion': ['squared_error']},
     'knn': {'n_neighbors': [3, 4, 5], 'weights': ['uniform', 'distance'],  'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'], 'leaf_size': [30, 40, 50]},
-    'random_forest': {'n_estimators': [20, 30, 40], 'max_depth': [10, 20, 30], 'max_features': ['sqrt', 'log2'], 'criterion': ['squared_error', 'absolute_error']},
+    #'random_forest': {'n_estimators': [20, 30, 40], 'max_depth': [10, 20, 30], 'max_features': ['sqrt', 'log2'], 'criterion': ['squared_error', 'absolute_error']},
     #'svm': {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf']}
 }
 
 # Define models
 models = {
-    'linear': LinearRegression(),
+    #'linear': LinearRegression(),
     'decision_tree': DecisionTreeRegressor(),
-    'knn': KNeighborsRegressor(),
-    'random_forest': RandomForestRegressor(),
+    #'knn': KNeighborsRegressor(),
+    #'random_forest': RandomForestRegressor(),
     #'svm': SVR()
 }
+start = time.time()
 
 best_model = None
 best_rmse = float('inf')
-
 for model_name, clf in models.items():
     params = hyperparameters[model_name]
     if params:
@@ -109,10 +109,10 @@ for model_name, clf in models.items():
     if rmse < best_rmse:
         best_rmse = rmse
         best_model = best_clf
-
+end = time.time()
+print("Time taken: ", end-start)
 print("Best model:", best_model)
 print("Lowest RMSE:", best_rmse)
-
 
 
 
