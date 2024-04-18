@@ -9,6 +9,8 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.svm import SVR
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_squared_error
 import time
 
 stemmer = SnowballStemmer('english')
@@ -17,7 +19,7 @@ stemming = input("Do you want to use stemming? (y/n): ")
 df_train = pd.read_csv('train.csv/train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('test.csv/test.csv', encoding="ISO-8859-1")
 #df_attr = pd.read_csv('attributes.csv/attributes.csv')
-df_pro_desc = pd.read_csv('product_descriptions.csv/product_descriptions.csv')
+df_pro_desc = pd.read_csv('product_descriptions.csv')
 num_train = df_train.shape[0]
 
 def str_stemmer(s):
@@ -67,7 +69,54 @@ y = df_train['relevance']  # Target variable
 
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-regression = input("Choose your regression model. Options: 1 =  linear, 2 = Decision Tree Regression, 3 = k-nearest neighbors, 4 = randomforrest:, 5= Support Vector: ")
+
+# Define hyperparameters grid for each model
+hyperparameters = {
+    'linear': {},
+    'decision_tree': {'max_depth': [10,20,30], 'min_samples_split': [4,5,6], 'min_samples_leaf': [3, 4], 'criterion': ['squared_error','friedman_mse']},
+    'knn': {'n_neighbors': [3, 4, 5], 'weights': ['uniform', 'distance'],  'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'], 'leaf_size': [30, 40, 50]},
+    'random_forest': {'n_estimators': [20, 30, 40], 'max_depth': [10, 20, 30], 'max_features': ['sqrt', 'log2'], 'criterion': ['squared_error', 'absolute_error']},
+    #'svm': {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf']}
+}
+
+# Define models
+models = {
+    'linear': LinearRegression(),
+    'decision_tree': DecisionTreeRegressor(),
+    'knn': KNeighborsRegressor(),
+    'random_forest': RandomForestRegressor(),
+    #'svm': SVR()
+}
+
+best_model = None
+best_rmse = float('inf')
+
+for model_name, clf in models.items():
+    params = hyperparameters[model_name]
+    if params:
+        grid_search = GridSearchCV(clf, params, scoring='neg_mean_squared_error', cv=5)
+        grid_search.fit(X_train, y_train)
+        best_params = grid_search.best_params_
+        best_clf = grid_search.best_estimator_
+    else:
+        best_clf = clf
+
+    best_clf.fit(X_train, y_train)
+    y_pred = best_clf.predict(X_test)
+    rmse = mean_squared_error(y_test, y_pred, squared=False)
+    print(f"Model: {model_name}, RMSE: {rmse}")
+
+    if rmse < best_rmse:
+        best_rmse = rmse
+        best_model = best_clf
+
+print("Best model:", best_model)
+print("Lowest RMSE:", best_rmse)
+
+
+
+
+"""regression = input("Choose your regression model. Options: 1 =  linear, 2 = Decision Tree Regression, 3 = k-nearest neighbors, 4 = randomforrest:, 5= Support Vector: ")
 
 while regression != 'stop':
     if regression == "1":
@@ -105,3 +154,4 @@ while regression != 'stop':
 
     regression = input("Choose your regression model. Options: 1 =  linear, 2 = Decision Tree Regression, 3 = k-nearest neighbors, 4 = randomforrest: ")
 
+"""
